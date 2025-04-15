@@ -1,99 +1,125 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+vietlegal_api/
+│
+├── src/
+│ ├── core/ # Lõi của ứng dụng (Domain Logic)
+│ │ ├── domain/ # Các entities, value objects
+│ │ │ ├── entities/ # Các đối tượng chính
+│ │ │ ├── interfaces/ # Các interface chung
+│ │ │ └── enums/ # Các enum
+│ │ │
+│ │ ├── dtos/ # Data Transfer Objects
+│ │ ├── exceptions/ # Các ngoại lệ tùy chỉnh
+│ │ └── interfaces/ # Ports (Interfaces cho repositories, services)
+│ │
+│ ├── usecases/ # Các use case của ứng dụng
+│ │ ├── user/ # Use cases liên quan đến user
+│ │ └── auth/ # Use cases liên quan đến authentication
+│ │
+│ ├── common/ # Các utility, helper chung
+│ │ ├── decorators/ # Custom decorators
+│ │ ├── guards/ # Authentication & Authorization guards
+│ │ ├── interceptors/ # Request/Response interceptors
+│ │ ├── filters/ # Exception filters
+│ │ └── utils/ # Utility functions
+│ │
+│ ├── config/ # Cấu hình ứng dụng
+│ │ ├── database.config.ts
+│ │ ├── jwt.config.ts
+│ │ └── environment.config.ts
+│ │
+│ ├── infrastructure/ # Các adapter và implementation chi tiết
+│ │ ├── adapters/ # Adapters cho external services
+│ │ │ ├── repositories/ # Database repositories
+│ │ │ └── external-services/ # External service adapters
+│ │ │
+│ │ └── modules/ # NestJS modules
+│ │
+│ ├── presentation/ # Controllers và routes
+│ │ ├── controllers/ # API controllers
+│ │ └── strategies/ # Authentication strategies
+│ │
+│ ├── app.module.ts # Root module
+│ ├── main.ts # Application entry point
+│ ├── app.controller.ts # Root controller
+│ ├── app.service.ts # Root service
+│ └── app.controller.spec.ts # Root controller tests
+│
+├── migrations/ # Database migrations
+├── test/ # Test files
+├── scripts/ # Utility scripts
+├── dist/ # Compiled code
+├── node_modules/ # Dependencies
+│
+├── .env.development # Development environment variables
+├── .gitignore # Git ignore rules
+├── package.json # Project dependencies and scripts
+├── package-lock.json # Dependency lock file
+├── nest-cli.json # NestJS CLI configuration
+├── tsconfig.json # TypeScript configuration
+├── tsconfig.build.json # TypeScript build configuration
+├── .eslintrc.js # ESLint configuration
+├── .prettierrc # Prettier configuration
+└── README.md # Project documentation
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+````
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Giải Thích Chi Tiết
 
-## Description
+### 1. Core Layer (`src/core/`)
+- Chứa toàn bộ logic nghiệp vụ thuần túy
+- Độc lập với framework và cơ sở dữ liệu
+- Chỉ phụ thuộc vào các abstraction (interfaces)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### 2. Use Cases (`src/usecases/`)
+- Triển khai logic nghiệp vụ cụ thể
+- Điều phối giữa các entities và repositories
+- Không chứa chi tiết implementation
 
-## Project setup
+### 3. Infrastructure Layer (`src/infrastructure/`)
+- Cung cấp các implementation cụ thể
+- Chứa các adapter kết nối với external services
+- Triển khai các port đã được định nghĩa ở core
 
+### 4. Presentation Layer (`src/presentation/`)
+- Chứa các controllers
+- Xử lý HTTP requests/responses
+- Chuyển đổi dữ liệu giữa use cases và client
+
+### 5. Common Layer (`src/common/`)
+- Chứa các tiện ích dùng chung
+- Guards, Interceptors, Decorators
+- Utilities và helper functions
+
+## Nguyên Tắc Chính
+- Dependency Rule: Các lớp trong layers trong sẽ không phụ thuộc vào các lớp bên ngoài
+- Separation of Concerns
+- Dễ dàng thay thế implementation
+- Kiểm thử dễ dàng
+
+## Lưu Ý Khi Áp Dụng
+1. Luôn ưu tiên interfaces
+2. Sử dụng dependency injection
+3. Giữ cho core layer thuần túy
+4. Minimize dependencies giữa các layers
+
+## Cài Đặt Ban Đầu
 ```bash
-$ npm install
-```
+# Cài đặt dependencies
+npm install
 
-## Compile and run the project
+# Chạy ứng dụng ở chế độ development
+npm run start:dev
 
-```bash
-# development
-$ npm run start
+# Build ứng dụng
+npm run build
 
-# watch mode
-$ npm run start:dev
+# Chạy tests
+npm run test
+````
 
-# production mode
-$ npm run start:prod
-```
+## Best Practices
 
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- Sử dụng DTO để validate input
+- Áp dụng dependency injection
+- Sử dụng guards và interceptors
+- Viết unit test cho từng layer
