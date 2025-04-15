@@ -1,3 +1,4 @@
+```
 vietlegal_api/
 │
 ├── src/
@@ -60,6 +61,7 @@ vietlegal_api/
 ├── .eslintrc.js # ESLint configuration
 ├── .prettierrc # Prettier configuration
 └── README.md # Project documentation
+```
 
 ````
 
