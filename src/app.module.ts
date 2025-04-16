@@ -4,6 +4,8 @@ import { AppService } from './app.service';
 import { ConfigModule } from './config/config.module';
 import { ConfigService } from '@nestjs/config';
 import { Module } from '@nestjs/common';
+import { UserModule } from './infrastructure/modules/user.module';
+import { AuthModule } from './infrastructure/modules/auth.module';
 
 @Module({
   imports: [
@@ -18,11 +20,14 @@ import { Module } from '@nestjs/common';
         username: configService.get('database.username'),
         password: configService.get('database.password'),
         host: configService.get('database.host'),
-        database: configService.get('database.database'), // Changed from 'database.name' to 'database.database'
+        database: configService.get('database.name'),
         schema: configService.get('database.schema'),
-        autoLoadEntities: configService.get('database.autoLoadEntities'),
+        autoLoadEntities:
+          configService.get('database.autoLoadEntities') === 'true',
       }),
     }),
+    UserModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
