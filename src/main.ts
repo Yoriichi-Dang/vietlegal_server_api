@@ -19,13 +19,13 @@ async function bootstrap() {
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('NestJs Masterclass - Blog app API')
-    .setDescription('Use the base API URL as http://localhost:3000')
-    .setTermsOfService('http://localhost:3000/terms-of-service')
+    .setDescription('Use the base API URL as http://localhost:3001')
+    .setTermsOfService('http://localhost:3001/terms-of-service')
     .setLicense(
       'MIT License',
       'https://github.com/git/git-scm.com/blob/main/MIT-LICENSE.txt',
     )
-    .addServer('http://localhost:3000')
+    .addServer('http://localhost:3001')
     .setVersion('1.0')
     .build();
 
@@ -38,6 +38,6 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 3001);
 }
 bootstrap();

@@ -10,6 +10,7 @@ import {
 import { IsEmail, MinLength, Matches } from 'class-validator';
 import { UserData } from './user-data.entity';
 import { Exclude } from 'class-transformer';
+
 @Entity('users_login')
 export class UserLogin {
   @PrimaryGeneratedColumn('uuid')
@@ -19,7 +20,7 @@ export class UserLogin {
   @IsEmail({}, { message: 'Invalid email format' })
   email: string;
 
-  @Column()
+  @Column({ nullable: true })
   @MinLength(8, { message: 'Password must be at least 8 characters long' })
   @Matches(
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/,
@@ -46,10 +47,31 @@ export class UserLogin {
   @Column({ nullable: true })
   resetPasswordTokenExpired: Date;
 
-  @CreateDateColumn()
+  // OAuth fields
+  @Column({ nullable: true })
+  provider: string;
+
+  @Column({ nullable: true })
+  providerAccountId: string;
+
+  @Column({ nullable: true })
+  accessToken: string;
+
+  @Column({ nullable: true })
+  idToken: string;
+
+  @CreateDateColumn({
+    name: 'created_at',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({
+    name: 'updated_at',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
   updatedAt: Date;
 
   // One-to-one relation with UserData

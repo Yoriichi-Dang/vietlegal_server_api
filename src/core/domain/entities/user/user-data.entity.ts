@@ -1,4 +1,11 @@
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { UserLogin } from './user-login.entity';
 
 @Entity('users_data')
@@ -7,7 +14,7 @@ export class UserData {
   id: string; // Changed from number to string (uuid) to match UserLogin.id type
 
   @Column({ nullable: true })
-  username: string;
+  name: string;
 
   @Column({ nullable: true })
   avatarUrl: string;
@@ -15,4 +22,17 @@ export class UserData {
   // Relation to UserLogin
   @OneToOne(() => UserLogin, (userLogin) => userLogin.userData)
   userLogin: UserLogin;
+  @CreateDateColumn({
+    name: 'created_at',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  createdAt: Date;
+
+  @UpdateDateColumn({
+    name: 'updated_at',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  updatedAt: Date;
 }
