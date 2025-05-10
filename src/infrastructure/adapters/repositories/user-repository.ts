@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { UserLogin } from 'src/core/domain/entities/user/user-login.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -9,6 +9,8 @@ import { Role, RoleType } from 'src/core/domain/entities/user/role.entity';
 
 @Injectable()
 export class UserRepository implements IUserRepository {
+  private readonly logger = new Logger(UserRepository.name);
+
   constructor(
     @InjectRepository(UserLogin)
     private readonly userRepository: Repository<UserLogin>,
@@ -66,8 +68,31 @@ export class UserRepository implements IUserRepository {
     id: string,
     userData: Partial<UserLogin>,
   ): Promise<UserLogin> {
+    this.logger.log(
+      `Updating user with ID: ${id}, data: ${JSON.stringify(userData)}`,
+    );
     await this.userRepository.update(id, userData);
     return this.findById(id);
+  }
+
+  async updateUserData(userData: UserData): Promise<UserData> {
+    this.logger.log(
+      `Updating user data with ID: ${userData.id}, name: ${userData.name}`,
+    );
+
+    try {
+      const result = await this.userDataRepository.save(userData);
+      this.logger.log(
+        `User data updated successfully: ${JSON.stringify(result)}`,
+      );
+      return result;
+    } catch (error) {
+      this.logger.error(
+        `Error updating user data: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
   }
 
   private async getDefaultRole(): Promise<Role | null> {
