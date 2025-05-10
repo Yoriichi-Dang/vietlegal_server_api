@@ -4,6 +4,7 @@ import {
   Inject,
   ConflictException,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtService } from './jwt.service';
 import { HashPasswordUsecase } from './hash-password-usecase';
@@ -37,7 +38,7 @@ export class AuthService {
 
     // Create user with userData
     const userData = new UserData();
-    userData.name = createUserDto.username;
+    userData.name = createUserDto.name;
 
     const newUser = new UserLogin();
     newUser.email = createUserDto.email;
@@ -61,18 +62,35 @@ export class AuthService {
   }
 
   async loginWithEmail(loginDto: LoginDto) {
-    // Find user
+    if (!loginDto.email || !loginDto.password) {
+      throw new BadRequestException('Email and password are required');
+    }
+
+    // Find user with userData relation để lấy được avatarUrl
     const user = await this.userRepository.findByEmail(loginDto.email);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    // Check if user has password (might not if registered with OAuth)
+    if (!user.password) {
+      throw new UnauthorizedException(
+        'This account cannot be accessed with password login',
+      );
+    }
+
     // Check password
-    const passwordValid = await this.hashPasswordUsecase.comparePassword(
-      loginDto.password,
-      user.password,
-    );
-    if (!passwordValid) {
+    try {
+      const passwordValid = await this.hashPasswordUsecase.comparePassword(
+        loginDto.password,
+        user.password,
+      );
+
+      if (!passwordValid) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+    } catch (error) {
+      console.error('Password comparison error:', error);
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -82,8 +100,15 @@ export class AuthService {
       email: user.email,
     });
 
+    // Tạo phản hồi bao gồm thông tin người dùng cần thiết
+    const userResponse = {
+      id: user.id,
+      email: user.email,
+      name: user.userData?.name,
+      avatarUrl: user.userData?.avatarUrl,
+    };
     return {
-      user,
+      user: userResponse,
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
       expiresIn: tokens.expiresIn,
@@ -140,8 +165,16 @@ export class AuthService {
       email: user.email,
     });
 
+    // Tạo phản hồi bao gồm thông tin người dùng cần thiết
+    const userResponse = {
+      id: user.id,
+      email: user.email,
+      name: user.userData?.name,
+      avatarUrl: user.userData?.avatarUrl,
+    };
+
     return {
-      user,
+      user: userResponse,
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
       expiresIn: tokens.expiresIn,
@@ -153,6 +186,13 @@ export class AuthService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    return user;
+
+    // Tạo phản hồi bao gồm thông tin người dùng cần thiết
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.userData?.name,
+      avatarUrl: user.userData?.avatarUrl,
+    };
   }
 }

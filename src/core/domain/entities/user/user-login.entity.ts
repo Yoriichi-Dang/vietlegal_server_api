@@ -6,10 +6,14 @@ import {
   UpdateDateColumn,
   OneToOne,
   JoinColumn,
+  OneToMany,
+  ManyToOne,
 } from 'typeorm';
 import { IsEmail, MinLength, Matches } from 'class-validator';
 import { UserData } from './user-data.entity';
 import { Exclude } from 'class-transformer';
+import { Conversation } from '../chat/conversation.entity';
+import { Role } from './role.entity';
 
 @Entity('users_login')
 export class UserLogin {
@@ -36,6 +40,9 @@ export class UserLogin {
   emailVerified: boolean;
 
   @Column({ nullable: true })
+  role_id: number;
+
+  @Column({ nullable: true })
   verificationToken: string;
 
   @Column({ nullable: true })
@@ -60,6 +67,22 @@ export class UserLogin {
   @Column({ nullable: true })
   idToken: string;
 
+  @OneToOne(() => UserData, (userData) => userData.userLogin, {
+    cascade: true,
+  })
+  @JoinColumn()
+  userData: UserData;
+
+  @OneToMany(() => Conversation, (conversation) => conversation.user, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
+  conversations: Conversation[];
+
+  @ManyToOne(() => Role, (role) => role.users)
+  @JoinColumn({ name: 'role_id' })
+  role: Role;
+
   @CreateDateColumn({
     name: 'created_at',
     type: 'timestamp',
@@ -73,11 +96,4 @@ export class UserLogin {
     default: () => 'CURRENT_TIMESTAMP',
   })
   updatedAt: Date;
-
-  // One-to-one relation with UserData
-  @OneToOne(() => UserData, (userData) => userData.userLogin, {
-    cascade: true,
-  })
-  @JoinColumn()
-  userData: UserData;
 }

@@ -41,12 +41,12 @@ export class CreateUserDto {
   @MinLength(3)
   @MaxLength(30)
   @ApiProperty({
-    description: 'Username',
+    description: 'Name of user',
     examples: {
       example1: {
         value: 'hoangnguyen241003',
       },
     },
   })
-  username: string;
+  name: string;
 }

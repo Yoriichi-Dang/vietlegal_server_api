@@ -13,12 +13,12 @@ export class TokenResponseInterceptor implements NestInterceptor {
     return next.handle().pipe(
       map((data) => {
         if (data && data.accessToken) {
-          // Chỉ trả về accessToken, refreshToken và expiresIn
+          // Cấu trúc user đã thay đổi, truy cập trực tiếp vào các thuộc tính
           return {
             user: {
               email: data.user.email,
-              name: data.user.userData.name,
-              avatarUrl: data.user.userData.avatarUrl,
+              name: data.user.name,
+              avatarUrl: data.user.avatarUrl,
             },
             accessToken: data.accessToken,
             refreshToken: data.refreshToken,

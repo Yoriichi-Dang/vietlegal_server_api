@@ -6,6 +6,9 @@ import { ConfigService } from '@nestjs/config';
 import { Module } from '@nestjs/common';
 import { UserModule } from './infrastructure/modules/user.module';
 import { AuthModule } from './infrastructure/modules/auth.module';
+import { ConversationModule } from './infrastructure/modules/conversation.module';
+import { AIModelModule } from './infrastructure/modules/ai-model.module';
+import { RoleModule } from './infrastructure/modules/role.module';
 
 @Module({
   imports: [
@@ -26,8 +29,11 @@ import { AuthModule } from './infrastructure/modules/auth.module';
           configService.get('database.autoLoadEntities') === 'true',
       }),
     }),
+    RoleModule,
     UserModule,
     AuthModule,
+    ConversationModule,
+    AIModelModule,
   ],
   controllers: [AppController],
   providers: [AppService],

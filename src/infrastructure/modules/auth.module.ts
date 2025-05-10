@@ -7,6 +7,10 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtService } from 'src/usecases/auth/jwt.service';
 import { AuthService } from 'src/usecases/auth/auth.service';
+import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from 'src/presentation/strategies/jwt.strategy';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Role } from 'src/core/domain/entities/user/role.entity';
 
 @Module({
   controllers: [AuthController],
@@ -17,9 +21,12 @@ import { AuthService } from 'src/usecases/auth/auth.service';
     },
     JwtService,
     AuthService,
+    JwtStrategy,
   ],
   imports: [
     forwardRef(() => UserModule),
+    TypeOrmModule.forFeature([Role]),
+    PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -31,6 +38,6 @@ import { AuthService } from 'src/usecases/auth/auth.service';
       }),
     }),
   ],
-  exports: [HashPasswordUsecase, JwtService, AuthService],
+  exports: [HashPasswordUsecase, JwtService, AuthService, PassportModule],
 })
 export class AuthModule {}

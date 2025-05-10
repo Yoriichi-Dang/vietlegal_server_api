@@ -3,9 +3,14 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule } from '@nestjs/swagger';
 import { DocumentBuilder } from '@nestjs/swagger';
+import { SensitiveDataInterceptor } from './common/interceptors/sensitive-data.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Áp dụng SensitiveDataInterceptor cho toàn bộ ứng dụng
+  app.useGlobalInterceptors(new SensitiveDataInterceptor());
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true, // Loại bỏ các thuộc tính không được định nghĩa trong DTO
@@ -18,15 +23,26 @@ async function bootstrap() {
   );
 
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('NestJs Masterclass - Blog app API')
-    .setDescription('Use the base API URL as http://localhost:3001')
+    .setTitle('VietLegal API')
+    .setDescription('API Documentation for VietLegal Assistant Platform')
     .setTermsOfService('http://localhost:3001/terms-of-service')
     .setLicense(
       'MIT License',
       'https://github.com/git/git-scm.com/blob/main/MIT-LICENSE.txt',
     )
-    .addServer('http://localhost:3001')
+    .addServer('http://localhost:2410')
     .setVersion('1.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'Authorization',
+        description: 'Enter JWT token',
+        in: 'header',
+      },
+      'access-token',
+    )
     .build();
 
   // Instantiate Document
@@ -38,6 +54,6 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
-  await app.listen(process.env.PORT ?? 3001);
+  await app.listen(process.env.PORT ?? 2410);
 }
 bootstrap();

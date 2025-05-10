@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserData } from 'src/core/domain/entities/user/user-data.entity';
 import { CreateUserDto } from 'src/core/dtos/auth/create-user.dto';
 import { IUserRepository } from 'src/core/interfaces/repositories/user-repository.inteface';
+import { Role, RoleType } from 'src/core/domain/entities/user/role.entity';
 
 @Injectable()
 export class UserRepository implements IUserRepository {
@@ -13,6 +14,8 @@ export class UserRepository implements IUserRepository {
     private readonly userRepository: Repository<UserLogin>,
     @InjectRepository(UserData)
     private readonly userDataRepository: Repository<UserData>,
+    @InjectRepository(Role)
+    private readonly roleRepository: Repository<Role>,
   ) {}
 
   async createUser(
@@ -22,20 +25,27 @@ export class UserRepository implements IUserRepository {
       return this.userRepository.save(createUserDto);
     }
     const user = this.userRepository.create(createUserDto);
+
+    // Thêm vai trò mặc định cho người dùng mới
+    const defaultRole = await this.getDefaultRole();
+    if (defaultRole) {
+      user.role_id = defaultRole.id;
+    }
+
     return this.userRepository.save(user);
   }
 
   async findByEmail(email: string): Promise<UserLogin | null> {
     return this.userRepository.findOne({
       where: { email },
-      relations: ['userData'],
+      relations: ['userData', 'role'],
     });
   }
 
   async findById(id: string): Promise<UserLogin | null> {
     return this.userRepository.findOne({
       where: { id },
-      relations: ['userData'],
+      relations: ['userData', 'role'],
     });
   }
 
@@ -48,7 +58,7 @@ export class UserRepository implements IUserRepository {
         provider,
         providerAccountId,
       },
-      relations: ['userData'],
+      relations: ['userData', 'role'],
     });
   }
 
@@ -58,5 +68,11 @@ export class UserRepository implements IUserRepository {
   ): Promise<UserLogin> {
     await this.userRepository.update(id, userData);
     return this.findById(id);
+  }
+
+  private async getDefaultRole(): Promise<Role | null> {
+    return this.roleRepository.findOne({
+      where: { name: RoleType.USER },
+    });
   }
 }

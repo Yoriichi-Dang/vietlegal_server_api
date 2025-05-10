@@ -36,7 +36,7 @@ export class AuthController {
         value: {
           email: 'hoangnguyen241003@gmail.com',
           password: 'Password123@',
-          username: 'hoangnguyen241003',
+          name: 'hoangnguyen241003',
         },
       },
     },
@@ -71,7 +71,6 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'User logged in successfully',
-    type: TokenResponseDto,
   })
   @UseInterceptors(TokenResponseInterceptor)
   @Post('login')
