@@ -10,6 +10,7 @@ export interface IConversationRepository {
     userId: string,
   ): Promise<Conversation>;
   findAll(userId: string): Promise<Conversation[]>;
+  findAllWithDetails(userId: string): Promise<Conversation[]>;
   findOne(id: string, userId: string): Promise<Conversation | null>;
   update(
     id: string,
@@ -22,5 +23,10 @@ export interface IConversationRepository {
     createMessageDto: CreateMessageDto,
     userId: string,
   ): Promise<Message>;
+  addMultipleMessages(
+    conversationId: string,
+    createMessageDtos: CreateMessageDto[],
+    userId: string,
+  ): Promise<Message[]>;
   getMessages(conversationId: string, userId: string): Promise<Message[]>;
 }

@@ -78,19 +78,54 @@ export class ConversationRepository implements IConversationRepository {
       // Kiểm tra xem cuộc hội thoại có tồn tại và thuộc về user không
       const conversation = await this.conversationRepository.findOne({
         where: { id, user: { id: userId } },
+        relations: ['messages', 'messages.attachments'],
       });
 
       if (!conversation) {
         return false;
       }
 
-      // Xóa conversation - các message và attachment sẽ tự động bị xóa nhờ cấu hình cascade
-      const result = await this.conversationRepository.delete({
-        id,
-        user: { id: userId },
-      });
+      // Thiết lập transaction để đảm bảo tính toàn vẹn dữ liệu
+      const queryRunner =
+        this.conversationRepository.manager.connection.createQueryRunner();
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
 
-      return result.affected > 0;
+      try {
+        // 1. Xóa tất cả attachments trước
+        if (conversation.messages && conversation.messages.length > 0) {
+          for (const message of conversation.messages) {
+            if (message.attachments && message.attachments.length > 0) {
+              await queryRunner.manager.delete(Attachment, {
+                message: { id: message.id },
+              });
+            }
+          }
+        }
+
+        // 2. Xóa tất cả messages
+        await queryRunner.manager.delete(Message, {
+          conversation: { id },
+        });
+
+        // 3. Cuối cùng xóa conversation
+        await queryRunner.manager.delete(Conversation, {
+          id,
+          user: { id: userId },
+        });
+
+        // Commit transaction
+        await queryRunner.commitTransaction();
+        return true;
+      } catch (err) {
+        // Rollback transaction nếu có lỗi
+        await queryRunner.rollbackTransaction();
+        console.error('Transaction error while removing conversation:', err);
+        return false;
+      } finally {
+        // Giải phóng query runner
+        await queryRunner.release();
+      }
     } catch (error) {
       console.error('Error removing conversation:', error);
       return false;
@@ -175,5 +210,88 @@ export class ConversationRepository implements IConversationRepository {
       relations: ['attachments', 'model'],
       order: { created_at: 'ASC' },
     });
+  }
+
+  async findAllWithDetails(userId: string): Promise<Conversation[]> {
+    const conversations = await this.conversationRepository.find({
+      where: { user: { id: userId } },
+      relations: ['messages', 'messages.attachments', 'messages.model'],
+      order: {
+        updated_at: 'DESC',
+        messages: { created_at: 'ASC' },
+      },
+    });
+
+    return conversations;
+  }
+
+  async addMultipleMessages(
+    conversationId: string,
+    createMessageDtos: CreateMessageDto[],
+    userId: string,
+  ): Promise<Message[]> {
+    // Kiểm tra xem cuộc hội thoại có tồn tại và thuộc về user không
+    const conversation = await this.conversationRepository.findOne({
+      where: { id: conversationId, user: { id: userId } },
+    });
+
+    if (!conversation) {
+      throw new Error('Conversation not found');
+    }
+
+    const savedMessages: Message[] = [];
+
+    // Lưu từng tin nhắn một
+    for (const createMessageDto of createMessageDtos) {
+      // Tạo tin nhắn
+      const message = this.messageRepository.create({
+        content: createMessageDto.content,
+        sender_type: createMessageDto.sender_type,
+        message_type: createMessageDto.message_type || 'text',
+        conversation,
+        // Thêm model_id nếu sender_type là 'model'
+        ...(createMessageDto.sender_type === 'model' && {
+          model_id: createMessageDto.model_id,
+        }),
+      });
+
+      const savedMessage = await this.messageRepository.save(message);
+
+      // Tạo attachments nếu có
+      if (
+        createMessageDto.attachments &&
+        createMessageDto.attachments.length > 0
+      ) {
+        // Tạo từng attachment
+        for (const attachmentDto of createMessageDto.attachments) {
+          const attachment = this.attachmentRepository.create({
+            ...attachmentDto,
+            message: savedMessage,
+          });
+          await this.attachmentRepository.save(attachment);
+        }
+      }
+
+      // Thêm vào danh sách tin nhắn đã lưu
+      const completeMessage = await this.messageRepository.findOne({
+        where: { id: savedMessage.id },
+        relations: [
+          'attachments',
+          ...(createMessageDto.sender_type === 'model' ? ['model'] : []),
+        ],
+      });
+
+      if (completeMessage) {
+        savedMessages.push(completeMessage);
+      }
+    }
+
+    // Cập nhật thời gian cập nhật cuối cùng của cuộc hội thoại
+    await this.conversationRepository.update(
+      { id: conversationId },
+      { updated_at: new Date() },
+    );
+
+    return savedMessages;
   }
 }

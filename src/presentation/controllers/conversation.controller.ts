@@ -18,6 +18,7 @@ import {
 import { CreateConversationDto } from 'src/core/dtos/conversation/create-conversation.dto';
 import { UpdateConversationDto } from 'src/core/dtos/conversation/update-conversation.dto';
 import { CreateMessageDto } from 'src/core/dtos/conversation/create-message.dto';
+import { AddMultipleMessagesDto } from 'src/core/dtos/conversation/add-multiple-messages.dto';
 import {
   ApiBody,
   ApiOperation,
@@ -31,6 +32,9 @@ import { FindAllConversationsUsecase } from 'src/usecases/conversation/find-all-
 import { AddMessageUsecase } from 'src/usecases/conversation/add-message.usecase';
 import { GetMessagesUsecase } from 'src/usecases/conversation/get-messages.usecase';
 import { UpdateConversationUsecase } from 'src/usecases/conversation/update-conversation.usecase';
+import { FindAllConversationsWithDetailsUsecase } from 'src/usecases/conversation/find-all-conversations-with-details.usecase';
+import { RemoveConversationUsecase } from 'src/usecases/conversation/remove-conversation.usecase';
+import { AddMultipleMessagesUsecase } from 'src/usecases/conversation/add-multiple-messages.usecase';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { SensitiveDataInterceptor } from 'src/common/interceptors/sensitive-data.interceptor';
 
@@ -46,6 +50,9 @@ export class ConversationController {
     private readonly addMessageUsecase: AddMessageUsecase,
     private readonly getMessagesUsecase: GetMessagesUsecase,
     private readonly updateConversationUsecase: UpdateConversationUsecase,
+    private readonly findAllConversationsWithDetailsUsecase: FindAllConversationsWithDetailsUsecase,
+    private readonly removeConversationUsecase: RemoveConversationUsecase,
+    private readonly addMultipleMessagesUsecase: AddMultipleMessagesUsecase,
   ) {}
 
   @ApiOperation({ summary: 'Create a new conversation' })
@@ -203,9 +210,82 @@ export class ConversationController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   public async removeConversation(@Param('id') id: string, @Req() req: any) {
-    void id;
-    void req;
+    try {
+      const userId = req.user?.sub || 'test-user-id';
+      await this.removeConversationUsecase.execute(id, userId);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw new NotFoundException(error.message);
+      }
+      throw new InternalServerErrorException('Failed to delete conversation');
+    }
+  }
 
-    throw new InternalServerErrorException('Method not implemented yet');
+  @ApiOperation({
+    summary: 'Get all conversations with messages, attachments and models',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'List of all conversations with details',
+  })
+  @Get('with-details')
+  public async getAllConversationsWithDetails(@Req() req: any) {
+    try {
+      const userId = req.user?.sub || 'test-user-id';
+      return await this.findAllConversationsWithDetailsUsecase.execute(userId);
+    } catch (error) {
+      console.error('Error fetching conversations with details:', error);
+      throw new UnauthorizedException(
+        'Failed to fetch conversations with details',
+      );
+    }
+  }
+
+  @ApiOperation({ summary: 'Add multiple messages to a conversation' })
+  @ApiParam({ name: 'id', description: 'Conversation ID' })
+  @ApiBody({
+    description: 'Multiple messages creation payload',
+    type: AddMultipleMessagesDto,
+    examples: {
+      messages: {
+        value: {
+          messages: [
+            {
+              content: 'Hello, this is message 1',
+              sender_type: 'user',
+            },
+            {
+              content: 'This is message 2 from a model',
+              sender_type: 'model',
+              model_id: 1,
+            },
+          ],
+        },
+      },
+    },
+    required: true,
+  })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Messages added successfully',
+  })
+  @Post(':id/batch-messages')
+  @HttpCode(HttpStatus.CREATED)
+  public async addMultipleMessages(
+    @Param('id') conversationId: string,
+    @Body() addMultipleMessagesDto: AddMultipleMessagesDto,
+    @Req() req: any,
+  ) {
+    try {
+      const userId = req.user?.sub || 'test-user-id';
+      return await this.addMultipleMessagesUsecase.execute(
+        conversationId,
+        addMultipleMessagesDto.messages,
+        userId,
+      );
+    } catch (error) {
+      console.error('Error adding multiple messages:', error);
+      throw new UnauthorizedException('Failed to add messages to conversation');
+    }
   }
 }

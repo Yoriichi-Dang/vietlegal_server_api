@@ -12,6 +12,9 @@ import { FindAllConversationsUsecase } from 'src/usecases/conversation/find-all-
 import { AddMessageUsecase } from 'src/usecases/conversation/add-message.usecase';
 import { GetMessagesUsecase } from 'src/usecases/conversation/get-messages.usecase';
 import { UpdateConversationUsecase } from 'src/usecases/conversation/update-conversation.usecase';
+import { FindAllConversationsWithDetailsUsecase } from 'src/usecases/conversation/find-all-conversations-with-details.usecase';
+import { RemoveConversationUsecase } from 'src/usecases/conversation/remove-conversation.usecase';
+import { AddMultipleMessagesUsecase } from 'src/usecases/conversation/add-multiple-messages.usecase';
 import { AuthModule } from './auth.module';
 
 @Module({
@@ -23,6 +26,9 @@ import { AuthModule } from './auth.module';
     AddMessageUsecase,
     GetMessagesUsecase,
     UpdateConversationUsecase,
+    FindAllConversationsWithDetailsUsecase,
+    RemoveConversationUsecase,
+    AddMultipleMessagesUsecase,
   ],
   imports: [
     TypeOrmModule.forFeature([
@@ -41,6 +47,9 @@ import { AuthModule } from './auth.module';
     AddMessageUsecase,
     GetMessagesUsecase,
     UpdateConversationUsecase,
+    FindAllConversationsWithDetailsUsecase,
+    RemoveConversationUsecase,
+    AddMultipleMessagesUsecase,
   ],
 })
 export class ConversationModule {}
