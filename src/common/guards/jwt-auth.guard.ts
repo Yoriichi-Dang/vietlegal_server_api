@@ -2,6 +2,7 @@ import {
   Injectable,
   ExecutionContext,
   UnauthorizedException,
+  HttpStatus,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -38,13 +39,43 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       );
     }
 
-    // You can throw an exception based on 'info' or 'err' content
+    // Handle different JWT authentication error scenarios
     if (err || !user) {
+      // Check if the token is expired
+      if (info && info.name === 'TokenExpiredError') {
+        throw new UnauthorizedException({
+          statusCode: HttpStatus.UNAUTHORIZED,
+          message: 'Token has expired',
+          error: 'Unauthorized',
+        });
+      }
+
+      // Check if no token was provided
+      if (info && info.name === 'Error' && info.message === 'No auth token') {
+        throw new UnauthorizedException({
+          statusCode: HttpStatus.UNAUTHORIZED,
+          message: 'No access token provided',
+          error: 'Unauthorized',
+        });
+      }
+
+      // Handle other JWT related errors
+      if (info && info.name === 'JsonWebTokenError') {
+        throw new UnauthorizedException({
+          statusCode: HttpStatus.UNAUTHORIZED,
+          message: 'Invalid token',
+          error: 'Unauthorized',
+        });
+      }
+
+      // Default error handling
       throw (
         err ||
-        new UnauthorizedException(
-          'Unauthorized - Invalid token or authentication required',
-        )
+        new UnauthorizedException({
+          statusCode: HttpStatus.UNAUTHORIZED,
+          message: 'Unauthorized - Invalid token or authentication required',
+          error: 'Unauthorized',
+        })
       );
     }
     return user;

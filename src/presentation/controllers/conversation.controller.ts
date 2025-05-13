@@ -13,6 +13,7 @@ import {
   InternalServerErrorException,
   UseGuards,
   UseInterceptors,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateConversationDto } from 'src/core/dtos/conversation/create-conversation.dto';
 import { UpdateConversationDto } from 'src/core/dtos/conversation/update-conversation.dto';
@@ -29,6 +30,7 @@ import { CreateConversationUsecase } from 'src/usecases/conversation/create-conv
 import { FindAllConversationsUsecase } from 'src/usecases/conversation/find-all-conversations.usecase';
 import { AddMessageUsecase } from 'src/usecases/conversation/add-message.usecase';
 import { GetMessagesUsecase } from 'src/usecases/conversation/get-messages.usecase';
+import { UpdateConversationUsecase } from 'src/usecases/conversation/update-conversation.usecase';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { SensitiveDataInterceptor } from 'src/common/interceptors/sensitive-data.interceptor';
 
@@ -43,6 +45,7 @@ export class ConversationController {
     private readonly findAllConversationsUsecase: FindAllConversationsUsecase,
     private readonly addMessageUsecase: AddMessageUsecase,
     private readonly getMessagesUsecase: GetMessagesUsecase,
+    private readonly updateConversationUsecase: UpdateConversationUsecase,
   ) {}
 
   @ApiOperation({ summary: 'Create a new conversation' })
@@ -176,11 +179,19 @@ export class ConversationController {
     @Body() updateConversationDto: UpdateConversationDto,
     @Req() req: any,
   ) {
-    void id;
-    void updateConversationDto;
-    void req;
-
-    throw new InternalServerErrorException('Method not implemented yet');
+    try {
+      const userId = req.user?.sub || 'test-user-id';
+      return await this.updateConversationUsecase.execute(
+        id,
+        updateConversationDto,
+        userId,
+      );
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw new NotFoundException(error.message);
+      }
+      throw new UnauthorizedException('Failed to update conversation');
+    }
   }
 
   @ApiOperation({ summary: 'Delete a conversation' })

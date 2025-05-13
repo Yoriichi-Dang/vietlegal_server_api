@@ -11,6 +11,7 @@ import { CreateConversationUsecase } from 'src/usecases/conversation/create-conv
 import { FindAllConversationsUsecase } from 'src/usecases/conversation/find-all-conversations.usecase';
 import { AddMessageUsecase } from 'src/usecases/conversation/add-message.usecase';
 import { GetMessagesUsecase } from 'src/usecases/conversation/get-messages.usecase';
+import { UpdateConversationUsecase } from 'src/usecases/conversation/update-conversation.usecase';
 import { AuthModule } from './auth.module';
 
 @Module({
@@ -21,6 +22,7 @@ import { AuthModule } from './auth.module';
     FindAllConversationsUsecase,
     AddMessageUsecase,
     GetMessagesUsecase,
+    UpdateConversationUsecase,
   ],
   imports: [
     TypeOrmModule.forFeature([
@@ -38,6 +40,7 @@ import { AuthModule } from './auth.module';
     FindAllConversationsUsecase,
     AddMessageUsecase,
     GetMessagesUsecase,
+    UpdateConversationUsecase,
   ],
 })
 export class ConversationModule {}

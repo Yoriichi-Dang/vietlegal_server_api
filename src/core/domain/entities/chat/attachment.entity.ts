@@ -27,9 +27,6 @@ export class Attachment {
   @Column()
   file_size: number;
 
-  @Column({ length: 64, nullable: true })
-  content_hash: string;
-
   @CreateDateColumn()
   created_at: Date;
 
