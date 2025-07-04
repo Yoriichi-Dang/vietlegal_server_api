@@ -1,0 +1,39 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:17
+    container_name: legal_wise_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: nguyen24102003
+      POSTGRES_DB: legalwise
+    env_file:
+      - .env.development
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db:/docker-entrypoint-initdb.d/
+    ports:
+      - '5432:5432'
+    restart: always
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nestjs-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: legal_wise_api
+    env_file:
+      - .env.development
+    ports:
+      - '2410:2410'
+    depends_on:
+      - postgres
+    restart: always
+
+volumes:
+  postgres_data:
